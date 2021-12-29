@@ -6,6 +6,10 @@ var backGroundCardId = {
   id: null,
 };
 
+var todos = [];
+
+var isSingleCardOpen = false;
+
 // selectors
 const container = document.querySelector('.container');
 const addBtn = document.getElementById('add-btn');
@@ -13,6 +17,7 @@ const addBtnSingleTodo = document.getElementById('add-btn-single-todo');
 const cardModalContainer = document.getElementById('todo-card-modal-container');
 const listModalContainer = document.getElementById('todo-list-modal-container');
 
+const backButton = document.querySelector('.todo-back');
 const closeBtn = document.querySelector('.close-btn');
 const closeTodoModalBtn = document.getElementById('close-todo-modal-btn');
 
@@ -83,10 +88,23 @@ function addCard() {
     </div>
   </div>`;
   todoContainer.insertAdjacentHTML('beforeend', cardBody);
+
+  if (isSingleCardOpen) {
+    document
+      .getElementById('${id}')
+      .querySelectorAll('.todo')
+      .forEach(todo => {
+        console.log(todo);
+        todo.remove();
+      });
+  }
   cardModalContainer.style.display = 'none';
   singleTodoCardContainer.style.display = 'none';
   container.style.display = 'block';
   document.getElementById('todo-title').value = '';
+  backGroundCardId.id = null;
+  selectedCardId.id = null;
+  isSingleCardOpen = false;
 }
 
 function deleteCard(e) {
@@ -141,20 +159,25 @@ function hideSingleTodoCard(e) {
         todo.remove();
       });
   }
+
   singleTodoCardContainer.style.display = 'none';
   container.style.display = 'block';
   selectedCardId.id = null;
   backGroundCardId.id = null;
+  isSingleCardOpen = false;
 }
 
 function openSingleTodoCard(e) {
+  isSingleCardOpen = true;
   singleTodoCardContainer.style.display = 'flex';
   container.style.display = 'none';
+
   selectedCardId.id = e.target.parentNode.id;
+  console.log(selectedCardId.id);
+  console.log(e.target.parentNode);
   backGroundCardId.id = e.target.parentNode.id;
 
   const parentElement = document.getElementById(selectedCardId.id);
-  const backButton = document.querySelector('.todo-back');
   const singleTodoHeading = document.querySelector(
     '.single-todo-heading'
   ).firstElementChild;
@@ -163,19 +186,23 @@ function openSingleTodoCard(e) {
   );
 
   backButton.addEventListener('click', hideSingleTodoCard);
+
   const title = parentElement.firstElementChild.textContent;
-  console.log(singleTodoCardHeading, singleTodoHeading, title);
+
   singleTodoHeading.textContent = title;
   singleTodoCardHeading.textContent = title;
 
   for (let i = 0; i < parentElement.childNodes.length; i++) {
     if (parentElement.childNodes[i].className == 'todo') {
-      singleTodoCardHeading.insertAdjacentHTML(
-        'afterend',
-        parentElement.childNodes[i].outerHTML
-      );
+      todos.push(parentElement.childNodes[i].outerHTML);
     }
   }
+
+  todos.forEach(todo => {
+    singleTodoCardHeading.insertAdjacentHTML('afterend', todo);
+  });
+
+  todos = [];
 }
 
 singleTodoCardContainer.addEventListener('click', e => {
